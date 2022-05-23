@@ -1,0 +1,39 @@
+.login-form
+{
+	width: 350px;
+	padding: 15px;
+	margin: 0 auto;
+	position: absolute;
+	top: 30%;
+	left: 37%;
+	background-color: rgba(255, 255, 255, 0.8);
+	border-radius: 15%;
+	width: 25%;
+
+}
+body
+{
+	background-image: url("imagens/misc/agricultura.png");
+	
+	background-repeat: no-repeat;
+	opacity: 0.9;
+}
+
+.card{
+	border-radius: 20px;
+}
+
+.navbar{
+	border-radius: 20px;
+}
+
+.graph:hover{
+	background-color: rgba(120, 120, 120, 0.8);
+	color: white;
+	text-shadow: 2px 2px 4px #000000;
+}
+
+h1 {
+	color: white;
+	text-shadow: 2px 2px 4px #000000;
+	  }
