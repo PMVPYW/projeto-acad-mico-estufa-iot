@@ -2,5 +2,5 @@
 	session_start();
 	session_unset();
 	session_destroy();
-	header("refresh:0;index.php");
+	header("refresh:0;login.php");
 ?>

@@ -28,8 +28,7 @@
 		session_start();
 		if (!isset($_SESSION['username']))
 		{
-			header("refresh: 5; url:index.php"); 
-			die("Acesso Restrito");
+            header("refresh:0;login.php");
 		}
 
 		$valor_AC = file_get_contents("api/files/AC/valor.txt");

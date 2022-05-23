@@ -20,13 +20,12 @@
 	session_start();
 	if (!isset($_SESSION['username']))
 	{
-		header("refresh: 5; url:index.php"); 
-		header("refresh:0;index.php");
+        header("refresh:0;login.php");
 	}
 	if ($_SESSION['permissionLevel'] > 2)
 	{
 		echo "<script>alert('Acesso negado!')</script>";
-		header("refresh:0;dashboard.php");
+        header("refresh:0;dashboard.php");
 	}
 	//header("Set-Cookie: widget_session=abc123; SameSite=None; Secure");
 ?>

@@ -24,8 +24,7 @@
 		session_start();
 		if (!isset($_SESSION['username']))
 		{
-			header("refresh: 5; url:index.php"); 
-			header("refresh:0;index.php");
+            header("refresh:0;login.php");
 		}
 		date_default_timezone_set("Europe/Lisbon");
 		//obtenção de dados dos sensores
