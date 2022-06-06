@@ -28,6 +28,8 @@
     */
     if ( isset($_POST['username']) && isset($_POST['password']))
     {
+        echo "<div class='messageLogin' id='login_h1'><h1>A fazer login. Por favor Espere</h1></div>";
+        echo "<script src='login_animation.js'></script>";
         $conn = new mysqli($servername, $username, $password, $dataBase);
         // Check connection
         if ($conn->connect_error) {
@@ -41,14 +43,17 @@
             {
                 if (hash("sha256", $_POST['password']) == $row['passwd'])
                 {
-                    echo "Login efetuado com sucesso!";
                     session_start();
                     $_SESSION["username"]=$_POST['username'];
                     $_SESSION['permissionLevel'] = $row['permissionLevel'];
-                    echo "<h1>Autenticado</h1>";
                     header("refresh:0;dashboard.php");
                 }
             }
+        }
+        if (!isset($_SESSION['username']))
+        {
+            echo "<script>alert('Palavra passe Errada');</script>";
+            header("refresh:0;login.php");
         }
     }
 

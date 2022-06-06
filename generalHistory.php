@@ -10,8 +10,8 @@
 	<link rel="stylesheet" type="text/css" href="style.css">
 	<style>
 		.scroller {
-  overflow:auto;  
-  
+  overflow:auto;
+
 	  }
 	</style>
 </head>
@@ -27,7 +27,44 @@
 		echo "<script>alert('Acesso negado!')</script>";
         header("refresh:0;dashboard.php");
 	}
-	//header("Set-Cookie: widget_session=abc123; SameSite=None; Secure");
+    else {
+        $servername = "localhost";
+        $username = "root";
+        $password = "root";
+        $dataBase = "projeto_ti";
+        $conn = new mysqli($servername, $username, $password, $dataBase);
+        if ($conn->connect_error) {
+            echo "Infelizmente não é possivel conectar-se á base de dados";
+            die("Connection failed: " . $conn->connect_error);
+        }
+
+        function lerLog($conn, $servername, $username, $password, $dataBase, $nome)
+        {
+            $sql = " SELECT valor FROM " . $nome . " ORDER By id DESC LIMIT 10";
+
+            $result = $conn->query($sql) or die($conn->error);
+            $log = array();
+            $data = array();
+            foreach ($result as $value) {
+                array_push($log, $value['valor']);
+            }
+            return $log;
+        }
+
+        function lerHora($conn, $servername, $username, $password, $dataBase, $nome)
+        {
+            $sql = " SELECT hora FROM " . $nome . " ORDER By id DESC LIMIT 10";
+
+            $result = $conn->query($sql) or die($conn->error);
+            $log = array();
+            $data = array();
+            foreach ($result as $value) {
+                array_push($log, $value['hora']);
+            }
+            return $log;
+        }
+    }
+
 ?>
 	<br>
 	<!--nav-bar-->
@@ -44,14 +81,14 @@
 					if ($_SESSION['permissionLevel'] == 1)
 					{
 						echo '<li class="nav-item"><a class="nav-link" aria-current="page" href="administration.php">Admin</a></li> ';
-					}  
+					}
 				?>
 			  	<li class="nav-item">
 					<a class="nav-link" aria-current="page" href="dashboard.php">Sensores</a>
-				</li>    
+				</li>
 				<li class="nav-item">
 					<a class="nav-link" aria-current="page" href="atuadores.php">Atuadores</a>
-				</li>      
+				</li>
 		      </ul>
 		     	<a href="logout.php" class="btn btn-primary">Logout</a>
 		    </div>
@@ -67,7 +104,7 @@
 
 
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-	
+
 
 
 	<div class="container text-center">
@@ -108,7 +145,7 @@
 						  </div>
 				  </div>
 			  </div>
-			  <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>	
+			  <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 			  <div class="col-md-6">
 				  <div class="card graph">
 				  <div class="card-header">
@@ -160,7 +197,7 @@
 						  </div>
 				  </div>
 			  </div>
-			  <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>	
+			  <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
 			  <div class="col-md-6">
 				  <div class="card graph">
 				  <div class="card-header">
@@ -183,7 +220,7 @@
 			  </div>
 		</div>
 	</div>
-	
+
 
 	<script type="text/javascript">
 google.charts.load('current',{packages:['corechart']});
@@ -194,22 +231,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/temperatura/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "temperatura"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "temperatura"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options
@@ -234,22 +262,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/humidade/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "luminosidade"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "luminosidade"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options
@@ -260,7 +279,7 @@ var options = {
   legend: 'none'
 };
 // Draw
-var chart = new google.visualization.LineChart(document.getElementById('HumidadeChart'));
+var chart = new google.visualization.LineChart(document.getElementById('LumChart'));
 chart.draw(data, options);
 }
 
@@ -276,22 +295,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/luminosidade/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "humidade"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "humidade"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options
@@ -302,7 +312,7 @@ var options = {
   legend: 'none'
 };
 // Draw
-var chart = new google.visualization.LineChart(document.getElementById('LumChart'));
+var chart = new google.visualization.LineChart(document.getElementById('HumidadeChart'));
 chart.draw(data, options);
 }
 </script>
@@ -317,22 +327,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/Deposito_Agua/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "Deposito_Agua"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "Deposito_Agua"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options
@@ -359,22 +360,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/Bateria/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "bateria"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "bateria"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options
@@ -404,30 +396,21 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/iluminação/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				if ($values[1] == "Ligado")
-				{
-					echo "['".$values[0]."',1],";
-				}
-				else
-				{
-					echo "['".$values[0]."',0],";
-				}
-				
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "iluminação"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "iluminação"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        if ($log[$x] == "Ligado")
+        {
+            echo "['". $hora[$x] . "', 1],";
+        }
+        else
+        {
+            echo "['". $hora[$x] . "', 0],";
+        }
+
+    }
   ?>
 ]);
 // Set Options
@@ -455,22 +438,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/AC/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "AC"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "AC"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options
@@ -486,48 +460,9 @@ chart.draw(data, options);
 }
 </script>
 
-<script type="text/javascript">
-google.charts.load('current',{packages:['corechart']});
-google.charts.setOnLoadCallback(drawChart);
-
-function drawChart() {
-// Set Data
-var data = google.visualization.arrayToDataTable([
-  ['sensor', 'valor'],
-  <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/Bateria/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
-  ?>
-]);
-// Set Options
-var options = {
-  title: 'Bateria',
-  hAxis: {title: 'data'},
-  vAxis: {title: 'Nivel Bateria'},
-  legend: 'none'
-};
-// Draw
-var chart = new google.visualization.LineChart(document.getElementById('BatChart'));
-chart.draw(data, options);
-}
 
 
 
-</script>
 
 <!-- Atuadores -->
 
@@ -540,30 +475,21 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/iluminação/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				if ($values[1] == "Ativo")
-				{
-					echo "['".$values[0]."',1],";
-				}
-				else
-				{
-					echo "['".$values[0]."',0],";
-				}
-				
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "irrigação"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "irrigação"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        if ($log[$x] == "Ligado")
+        {
+            echo "['". $hora[$x] . "', 1],";
+        }
+        else
+        {
+            echo "['". $hora[$x] . "', 0],";
+        }
+
+    }
   ?>
 ]);
 // Set Options
@@ -579,48 +505,7 @@ chart.draw(data, options);
 }
 </script>
 
-<script type="text/javascript">
-google.charts.load('current',{packages:['corechart']});
-google.charts.setOnLoadCallback(drawChart);
 
-function drawChart() {
-// Set Data
-var data = google.visualization.arrayToDataTable([
-  ['sensor', 'valor'],
-  <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/Bateria/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
-  ?>
-]);
-// Set Options
-var options = {
-  title: 'Bateria',
-  hAxis: {title: 'data'},
-  vAxis: {title: 'Nivel Bateria'},
-  legend: 'none'
-};
-// Draw
-var chart = new google.visualization.LineChart(document.getElementById('BatChart'));
-chart.draw(data, options);
-}
-
-
-
-</script>
 
 <!-- Atuadores -->
 
@@ -636,14 +521,14 @@ var data = google.visualization.arrayToDataTable([
 	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/Pulverizador_Fertilizante/log.txt")));//leitura de log, separação em array e inversão do mesmo
 	$i = 0;
 	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
+	foreach ($log as $line)
 	{
-		if ($i < 11) 
+		if ($i < 11)
 		{
-			if (strlen($line) > 0) 
+			if (strlen($line) > 0)
 			{
 				$values = explode(";", $line);
-				if ($values[1] == "Ativo")
+				if ($values[1] == "Ligado")
 				{
 					echo "['".$values[0]."',1],";
 				}
@@ -651,10 +536,10 @@ var data = google.visualization.arrayToDataTable([
 				{
 					echo "['".$values[0]."',0],";
 				}
-				
+
 				$i++;
 			}
-			
+
 		}
 	}
   ?>
@@ -681,22 +566,13 @@ function drawChart() {
 var data = google.visualization.arrayToDataTable([
   ['sensor', 'valor'],
   <?php
-	$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/seguidor_solar/log.txt")));//leitura de log, separação em array e inversão do mesmo
-	$i = 0;
-	$log = array_reverse(array_slice($log, 0, 10));
-	foreach ($log as $line) 
-	{
-		if ($i < 11) 
-		{
-			if (strlen($line) > 0) 
-			{
-				$values = explode(";", $line);
-				echo "['".$values[0]."',".$values[1]."],";
-				$i++;
-			}
-			
-		}
-	}
+    $log = array_reverse(lerLog($conn, $servername, $username, $password, $dataBase, "Seguidor_Solar"));
+    $hora = array_reverse(lerHora($conn, $servername, $username, $password, $dataBase, "Seguidor_Solar"));
+
+    foreach (range(0, count(($log))-1) as $x)
+    {
+        echo "['".$hora[$x]."',". $log[$x]."],";
+    }
   ?>
 ]);
 // Set Options

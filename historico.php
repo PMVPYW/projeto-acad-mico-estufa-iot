@@ -58,6 +58,27 @@
 					{
 						if (file_exists("api/files/" . $_GET['nome'] . "/log.txt"))//verificação de existência dos ficheiros
 						{
+                            $servername = "localhost";
+                            $username = "root";
+                            $password = "root";
+                            $dataBase = "projeto_ti";
+                            $conn = new mysqli($servername, $username, $password, $dataBase);
+                            if ($conn->connect_error) {
+                                echo "Infelizmente não é possivel conectar-se á base de dados";
+                                die("Connection failed: " . $conn->connect_error);
+                            }
+                            function lerLog($conn, $servername, $username, $password, $dataBase, $nome)
+                            {
+                                $sql = " SELECT valor, hora FROM ". $nome ." ORDER By id DESC";
+
+                                $result = $conn->query($sql) or die($conn->error);
+                                return $result;
+                                /*while($row = $result->fetch_assoc())
+                                {
+                                    return $row['valor'];
+                                }*/
+
+                            }
 							echo "<div class='text-center'>
 							<h1>Histórico:" . $_GET['nome'] . "</h1>
 						</div>";
@@ -71,17 +92,13 @@
 									</tr>
 								</thead>
 								<tbody>';//criação da tabela
-							$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/" . $_GET['nome'] . "/log.txt")));//leitura de log, separação em array e inversão do mesmo
-							foreach($log as $report)
+							#$log = array_reverse(explode(PHP_EOL, file_get_contents("api/files/" . $_GET['nome'] . "/log.txt")));//leitura de log, separação em array e inversão do mesmo
+							$log = lerLog($conn, $servername, $username, $password, $dataBase, $_GET['nome']);
+                            foreach($log as $report)
 							{
-								if (strlen($report) > 0)
-								{
-									$data = explode(";", $report);
-									echo '<tr><td>' . $data[1] . '</td><td>' . $data[0] . '</td></tr>'; 
-								}
-
+									echo '<tr><td>' . $report['valor'] . '</td><td>' . $report['hora'] . '</td></tr>';
 							}
-								
+							$conn->close();
 						}
 					}
 				}
