@@ -91,4 +91,4 @@ setInterval(function()
     var url = "http://localhost/projeto_ti%20-%20SQL/api/api.php?nome=seguidor_Solar"
     set(url, "Seguidor Solar", "º", "solar");
 
-}, 1000);
+}, 1500);
